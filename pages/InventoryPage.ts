@@ -52,6 +52,18 @@ export class InventoryPage {
       .locator('.inventory_item_price');
   }
 
+  getItemImage(productName: string): Locator {
+    return this.page
+      .locator('.inventory_item', { hasText: productName })
+      .locator('.inventory_item_img img');
+  }
+
+  getItemNameLink(productName: string): Locator {
+    return this.page
+      .locator('.inventory_item', { hasText: productName })
+      .locator('.inventory_item_name');
+  }
+
   async sortBy(option: SortOption): Promise<void> {
     await this.sortDropdown.selectOption(option);
   }
