@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
 
 test('homepage loads successfully', async ({ page }) => {
   const loginPage = new LoginPage(page);
@@ -62,4 +63,16 @@ test('direct navigation to inventory.html without logging in is blocked', async 
   await expect(loginPage.errorMessage).toHaveText(
     "Epic sadface: You can only access '/inventory.html' when you are logged in."
   );
+});
+
+test('logging out returns to the login page', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('standard_user', 'secret_sauce');
+
+  const inventoryPage = new InventoryPage(page);
+  await inventoryPage.logout();
+
+  await expect(page).toHaveURL('https://www.saucedemo.com/');
+  await expect(loginPage.loginButton).toBeVisible();
 });

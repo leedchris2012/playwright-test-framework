@@ -9,6 +9,8 @@ export class InventoryPage {
   readonly sortDropdown: Locator;
   readonly firstItemName: Locator;
   readonly itemImages: Locator;
+  readonly menuButton: Locator;
+  readonly logoutLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -17,10 +19,17 @@ export class InventoryPage {
     this.sortDropdown = page.locator('[data-test="product-sort-container"]');
     this.firstItemName = page.locator('.inventory_item_name').first();
     this.itemImages = page.locator('.inventory_item_img img');
+    this.menuButton = page.locator('#react-burger-menu-btn');
+    this.logoutLink = page.locator('#logout_sidebar_link');
   }
 
   async getItemImageSources(): Promise<string[]> {
     return this.itemImages.evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).src));
+  }
+
+  async logout(): Promise<void> {
+    await this.menuButton.click();
+    await this.logoutLink.click();
   }
 
   getAddToCartButton(productName: string): Locator {
