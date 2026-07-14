@@ -9,8 +9,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: ['**/snapshot/**'] },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: ['**/snapshot/**'] },
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, dependencies: ['setup'] },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: ['**/snapshot/**'], dependencies: ['setup'] },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: ['**/snapshot/**'], dependencies: ['setup'] },
   ],
 });
