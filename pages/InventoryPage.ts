@@ -13,6 +13,9 @@ export class InventoryPage {
   readonly itemImages: Locator;
   readonly menuButton: Locator;
   readonly logoutLink: Locator;
+  readonly twitterLink: Locator;
+  readonly facebookLink: Locator;
+  readonly linkedinLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -25,6 +28,9 @@ export class InventoryPage {
     this.itemImages = page.locator('.inventory_item_img img');
     this.menuButton = page.locator('#react-burger-menu-btn');
     this.logoutLink = page.locator('#logout_sidebar_link');
+    this.twitterLink = page.locator('[data-test="social-twitter"]');
+    this.facebookLink = page.locator('[data-test="social-facebook"]');
+    this.linkedinLink = page.locator('[data-test="social-linkedin"]');
   }
 
   async getItemImageSources(): Promise<string[]> {
