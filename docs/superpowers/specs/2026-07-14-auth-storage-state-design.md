@@ -63,11 +63,12 @@ Both helpers are hardcoded to `standard_user`, and `checkout.spec.ts` mixes `sta
 - `tests/inventory/product-details.spec.ts` — mixed accounts (`standard_user` x2, `problem_user` x1 via `test.fail()`), needs describe-block split
 - `tests/inventory/footer-social-links.spec.ts`
 - `tests/inventory/visual-user-bugs.spec.ts`
-- `tests/snapshot/**` (all specs — each currently logs in to reach the page being screenshotted)
+- `tests/snapshot/**` except `tests/snapshot/login/locked-out-visual.spec.ts` (all remaining specs currently log in to reach the page being screenshotted)
 
-**Left untouched** (login is the subject under test):
+**Left untouched** (login is the subject under test, or the account has no storage state):
 - `tests/login/login.spec.ts`
 - The `performance_glitch_user` timing test
+- `tests/snapshot/login/locked-out-visual.spec.ts` — logs in as `locked_out_user`, which per the Non-goals section above never reaches an authenticated session, so no storage state exists for it
 
 ## Compatibility with existing npm scripts
 
