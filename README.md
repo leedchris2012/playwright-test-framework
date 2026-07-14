@@ -1,0 +1,87 @@
+# Sauce Demo Playwright Test Suite
+
+An end-to-end test suite built with [Playwright](https://playwright.dev/) against [saucedemo.com](https://www.saucedemo.com), a sandbox e-commerce site that ships with intentional bugs tied to specific test user accounts. This project is a portfolio piece demonstrating test design, page object structure, and bug-catching (functional + visual regression) testing.
+
+## Setup
+
+```bash
+npm install
+npx playwright install
+```
+
+## Running Tests
+
+Run the full suite (chromium, firefox, webkit):
+```bash
+npx playwright test
+```
+
+Run only on Chromium (required for snapshot tests — firefox/webkit skip `tests/snapshot/**`):
+```bash
+npx playwright test --project=chromium
+```
+
+Run only functional tests (excludes `tests/snapshot`):
+```bash
+npx playwright test tests/cart tests/filter tests/inventory tests/login
+# or:
+npm run test:functional
+```
+
+Run only snapshot tests (chromium only):
+```bash
+npx playwright test tests/snapshot --project=chromium
+# or:
+npm run test:snapshot
+```
+
+Run a specific file:
+```bash
+npx playwright test tests/snapshot/cart/checkout-complete-visual.spec.ts
+```
+
+Run tests matching a name:
+```bash
+npx playwright test -g "checkout complete"
+```
+
+Update snapshot baselines after an intentional UI change:
+```bash
+npx playwright test --update-snapshots
+```
+
+View the HTML report from the last run:
+```bash
+npx playwright show-report
+```
+
+Debug interactively:
+```bash
+npx playwright test --headed
+npx playwright test --debug
+```
+
+## Project Structure
+
+```
+pages/      Page object models (LoginPage, InventoryPage, CartPage, CheckoutStepOnePage, CheckoutStepTwoPage, CheckoutCompletePage, ProductDetailsPage)
+tests/      Functional tests, organized by feature (login, inventory, cart, filter)
+tests/snapshot/   Visual regression tests (Chromium only), organized to mirror tests/
+```
+
+## Bugs Documented
+
+Sauce Demo ships several test accounts that each trigger a different class of bug. This suite exercises and documents:
+
+- **`error_user`** — cannot add all products to cart (only 3 of 6 succeed); checkout form silently rejects input in the last-name field
+- **`visual_user`** — misplaced cart icon and incorrect/randomized prices on the inventory page
+- **`problem_user`** — broken product images; product detail navigation issue
+- **`performance_glitch_user`** — login flow is ~50-60x slower than a normal user
+- **`locked_out_user`** — login is blocked with an error message; covered by a snapshot test of the login error state
+
+Each bug is covered by a functional assertion test, and select cases (login errors, cart/checkout states, broken images) also have a visual regression snapshot.
+
+## Notes
+
+- Base URL and browser projects are configured in `playwright.config.ts`.
+- Snapshot tests currently run on Chromium/macOS only; baselines are platform-specific.
