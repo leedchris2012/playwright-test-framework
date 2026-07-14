@@ -8,6 +8,7 @@ export class InventoryPage {
   readonly cartIcon: Locator;
   readonly sortDropdown: Locator;
   readonly firstItemName: Locator;
+  readonly itemImages: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -15,6 +16,11 @@ export class InventoryPage {
     this.cartIcon = page.locator('.shopping_cart_link');
     this.sortDropdown = page.locator('[data-test="product-sort-container"]');
     this.firstItemName = page.locator('.inventory_item_name').first();
+    this.itemImages = page.locator('.inventory_item_img img');
+  }
+
+  async getItemImageSources(): Promise<string[]> {
+    return this.itemImages.evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).src));
   }
 
   getAddToCartButton(productName: string): Locator {
