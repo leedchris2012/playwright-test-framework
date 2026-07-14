@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
-import { InventoryPage } from '../../pages/InventoryPage';
+import { LoginPage } from '../../../pages/LoginPage';
+import { InventoryPage } from '../../../pages/InventoryPage';
 
 test('inventory page after adding Sauce Labs Backpack to cart matches baseline', async ({
   page,
