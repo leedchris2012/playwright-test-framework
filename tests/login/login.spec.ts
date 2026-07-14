@@ -113,3 +113,25 @@ test('logging out returns to the login page', async ({ page }) => {
   await expect(page).toHaveURL('https://www.saucedemo.com/');
   await expect(loginPage.loginButton).toBeVisible();
 });
+
+// Bug check: performance_glitch_user has an artificial ~5 second delay
+// baked into its login (confirmed live: standard_user resolves in well
+// under 100ms, performance_glitch_user consistently takes 5+ seconds).
+// A 3 second threshold catches that delay with headroom below the ~5s
+// actual value, without being so tight that normal network jitter fails it.
+test('performance_glitch_user: login takes noticeably longer than a normal login', async ({
+  page,
+}) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+
+  await loginPage.usernameInput.fill('performance_glitch_user');
+  await loginPage.passwordInput.fill('secret_sauce');
+
+  const start = Date.now();
+  await loginPage.loginButton.click();
+  await expect(page).toHaveURL(/.*inventory\.html/);
+  const elapsed = Date.now() - start;
+
+  expect(elapsed).toBeGreaterThan(3000);
+});
