@@ -30,7 +30,7 @@ Playwright's dependency-based "setup project" pattern:
 
 ### Consuming storage state in specs
 
-A file-level `test.use({ storageState })` only works when a whole spec file uses one account. Several existing files mix accounts (`product-images.spec.ts`, `sort-dropdown.spec.ts`, `add-to-cart.spec.ts`, `checkout.spec.ts`), so those get per-account `test.describe` blocks, each with its own scoped `test.use()`:
+A file-level `test.use({ storageState })` only works when a whole spec file uses one account. Several existing files mix accounts (`product-images.spec.ts`, `sort-dropdown.spec.ts`, `add-to-cart.spec.ts`, `checkout.spec.ts`, `product-details.spec.ts`), so those get per-account `test.describe` blocks, each with its own scoped `test.use()`:
 
 ```ts
 test.describe('standard_user', () => {
@@ -50,15 +50,17 @@ Single-account files (`view-cart.spec.ts`, `footer-social-links.spec.ts`, `visua
 
 Helpers that currently perform login as their first step (`checkoutBackpack()`, `reachCheckoutStepOne()` in `checkout.spec.ts`, and equivalents in other specs) change to start from `page.goto('/inventory.html')` instead, since the storage state already carries the authenticated session — no login step needed, but a navigation is still required because storage state restores cookies/localStorage, not browser navigation position.
 
+Both helpers are hardcoded to `standard_user`, and `checkout.spec.ts` mixes `standard_user` and `error_user` tests, so it needs the same per-account `describe` split described above. `checkoutBackpack()` and `reachCheckoutStepOne()` (and the tests that call them) must end up nested inside that file's `standard_user` describe block, not left at file scope, so they pick up the right storage state.
+
 ## Migration scope
 
 **Converted to storage state** (login-as-precondition only):
-- `tests/cart/add-to-cart.spec.ts`
+- `tests/cart/add-to-cart.spec.ts` — mixed accounts, needs describe-block split
 - `tests/cart/view-cart.spec.ts`
-- `tests/cart/checkout.spec.ts`
-- `tests/filter/sort-dropdown.spec.ts`
-- `tests/inventory/product-images.spec.ts`
-- `tests/inventory/product-details.spec.ts`
+- `tests/cart/checkout.spec.ts` — mixed accounts, needs describe-block split
+- `tests/filter/sort-dropdown.spec.ts` — mixed accounts, needs describe-block split
+- `tests/inventory/product-images.spec.ts` — mixed accounts, needs describe-block split
+- `tests/inventory/product-details.spec.ts` — mixed accounts (`standard_user` x2, `problem_user` x1 via `test.fail()`), needs describe-block split
 - `tests/inventory/footer-social-links.spec.ts`
 - `tests/inventory/visual-user-bugs.spec.ts`
 - `tests/snapshot/**` (all specs — each currently logs in to reach the page being screenshotted)
@@ -77,7 +79,7 @@ Playwright resolves project `dependencies` independent of path filters or `--pro
 
 ## Testing / Verification
 
-- Run the full suite after migration (`npm test`) and confirm the same pass count as the current baseline (74 passing / 4 skipped).
+- Immediately before starting migration, run `npm test` and record the current pass/skip count as the baseline (do not reuse the 74/4 figure from earlier project notes — that predates the three snapshot tests added in commit `41ba835`; the suite is at 118 tests across 16 files as of this writing). After migration, the full suite should match that freshly captured baseline.
 - Confirm `.auth/*.json` files are generated fresh on a clean run (delete `.auth/` and re-run).
 - Confirm the `setup` project appears as its own step in the HTML report.
 - Confirm `npm run test:functional` and `npm run test:snapshot` still trigger `setup` correctly (the compatibility point above).
