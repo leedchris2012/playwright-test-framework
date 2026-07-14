@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../../pages/LoginPage';
 import { InventoryPage } from '../../../pages/InventoryPage';
+
+test.use({ storageState: '.auth/standard_user.json' });
 
 // Visual check: takes a screenshot of the Products page after adding an
 // item, and compares it pixel-for-pixel against a saved reference image
@@ -8,9 +9,7 @@ import { InventoryPage } from '../../../pages/InventoryPage';
 test('inventory page after adding Sauce Labs Backpack to cart matches baseline', async ({
   page,
 }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('standard_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   const inventoryPage = new InventoryPage(page);
   await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();

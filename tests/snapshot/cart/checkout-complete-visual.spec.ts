@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../../pages/LoginPage';
 import { InventoryPage } from '../../../pages/InventoryPage';
 import { CartPage } from '../../../pages/CartPage';
 import { CheckoutStepOnePage } from '../../../pages/CheckoutStepOnePage';
 import { CheckoutStepTwoPage } from '../../../pages/CheckoutStepTwoPage';
+
+test.use({ storageState: '.auth/standard_user.json' });
 
 // Visual check: takes a screenshot of the order confirmation page after
 // completing checkout, and compares it pixel-for-pixel against a saved
@@ -11,9 +12,7 @@ import { CheckoutStepTwoPage } from '../../../pages/CheckoutStepTwoPage';
 test('checkout-complete page after finishing an order matches baseline', async ({
   page,
 }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('standard_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   const inventoryPage = new InventoryPage(page);
   await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();

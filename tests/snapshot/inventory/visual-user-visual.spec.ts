@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../../pages/LoginPage';
+
+test.use({ storageState: '.auth/visual_user.json' });
 
 // Visual check: takes a screenshot of the Products page for visual_user,
 // and compares it pixel-for-pixel against a saved reference image. Locks
@@ -13,9 +14,7 @@ import { LoginPage } from '../../../pages/LoginPage';
 test('visual_user inventory page matches baseline (misplaced cart icon)', async ({
   page,
 }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('visual_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   await page.addStyleTag({
     content: '.inventory_item_price { color: transparent !important; }',
