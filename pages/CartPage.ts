@@ -10,4 +10,10 @@ export class CartPage {
     this.itemName = page.locator('.cart_item .inventory_item_name');
     this.itemPrice = page.locator('.cart_item .inventory_item_price');
   }
+
+  getRemoveButton(productName: string): Locator {
+    return this.page
+      .locator('.cart_item', { hasText: productName })
+      .locator('button');
+  }
 }
