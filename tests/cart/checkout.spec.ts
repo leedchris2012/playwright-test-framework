@@ -134,6 +134,33 @@ test('checkout step one requires a postal code', async ({ page }) => {
   await expect(page).toHaveURL(/.*checkout-step-one\.html/);
 });
 
+// Bug check: for the "error_user" test account, the "Last Name" field on
+// checkout-step-one silently rejects input — neither `fill()` nor typing
+// keystrokes leave any value in it, even though the field isn't disabled
+// or readonly. Verified live and reproducible. This test confirms that
+// known bug.
+test('error_user: cannot type a last name on checkout step one', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('error_user', 'secret_sauce');
+
+  const inventoryPage = new InventoryPage(page);
+  await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();
+  await inventoryPage.cartIcon.click();
+
+  const cartPage = new CartPage(page);
+  await cartPage.checkoutButton.click();
+
+  await expect(page).toHaveURL(/.*checkout-step-one\.html/);
+
+  const stepOnePage = new CheckoutStepOnePage(page);
+  await stepOnePage.lastNameInput.fill('Doe');
+  await expect(stepOnePage.lastNameInput).toHaveValue('');
+
+  await stepOnePage.lastNameInput.pressSequentially('Doe');
+  await expect(stepOnePage.lastNameInput).toHaveValue('');
+});
+
 // Checks that clicking "Generate PDF order" on the confirmation page
 // actually downloads a file, named with today's date.
 test('generating a PDF order downloads a file dated today', async ({ page }) => {
