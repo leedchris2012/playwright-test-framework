@@ -4,13 +4,7 @@ import { InventoryPage } from '../../../pages/InventoryPage';
 
 test('cart page with Sauce Labs Backpack matches baseline', async ({
   page,
-  browserName,
 }) => {
-  test.skip(
-    browserName !== 'chromium',
-    'Visual snapshots run on chromium only to avoid cross-engine rendering noise'
-  );
-
   const loginPage = new LoginPage(page);
   await loginPage.goto();
   await loginPage.login('standard_user', 'secret_sauce');
