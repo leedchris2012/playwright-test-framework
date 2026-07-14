@@ -3,10 +3,18 @@
 ## Purpose
 
 Portfolio project demonstrating Playwright test automation skills against
-[nopCommerce demo store](https://demo.nopcommerce.com/). Goals: solid test
-automation fundamentals, framework/architecture quality, eventual broad
-coverage of the app, and breadth across Playwright's tooling (TypeScript,
-possibly API testing later).
+[Sauce Demo](https://www.saucedemo.com/) (Sauce Labs' e-commerce demo app,
+starting at a login screen). Goals: solid test automation fundamentals,
+framework/architecture quality, eventual broad coverage of the app, and
+breadth across Playwright's tooling (TypeScript, possibly API testing
+later).
+
+Originally targeted the nopCommerce demo store
+(`https://demo.nopcommerce.com/`), but that site began returning a
+Cloudflare "verifying you are human" challenge to all traffic — confirmed
+site-wide (not automation-specific) via a plain browser check — so the
+target was switched to Sauce Demo, which is built specifically for test
+automation practice and has no such block.
 
 This spec covers the **initial framework foundation** and a single first
 test (homepage loads). Test suite scope beyond that will be built
@@ -23,8 +31,8 @@ up front.
 
 - **Test runner**: `@playwright/test`
 - **Language**: TypeScript
-- **Base URL**: `https://demo.nopcommerce.com/` set in `playwright.config.ts`
-  so tests/page objects use relative paths (`/`, `/search`, etc.)
+- **Base URL**: `https://www.saucedemo.com` set in `playwright.config.ts`
+  so tests/page objects use relative paths (`/`, `/inventory.html`, etc.)
 - **Browsers**: Chromium, Firefox, and WebKit configured as projects
   (cross-browser coverage from the start)
 - **Reporter**: Playwright's built-in HTML reporter (default), viewable
@@ -55,13 +63,17 @@ my-playwright-project/
 
 ## First Test
 
+Sauce Demo's `/` is a login screen (no auth flow is in scope yet — that's
+future work). "Homepage loads" here means the login screen itself rendered
+correctly.
+
 - `HomePage` page object:
   - `goto()` — navigates to `/`
-  - A locator/assertion target that proves the page loaded correctly
-    (e.g. distinctive header/logo element or page title)
+  - `logo` — locator for the `.login_logo` element (text "Swag Labs"),
+    confirmed present via a live check of the rendered page
 - `tests/home.spec.ts`:
-  - One test: "homepage loads successfully" — navigates via `HomePage`
-    and asserts the key element is visible.
+  - One test: "homepage loads successfully" — navigates via `HomePage`,
+    asserts the logo is visible, and asserts the page title is "Swag Labs"
 
 ## Out of Scope (for this spec)
 
