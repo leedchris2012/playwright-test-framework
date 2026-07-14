@@ -23,6 +23,12 @@ export class InventoryPage {
       .locator('button');
   }
 
+  getItemPrice(productName: string): Locator {
+    return this.page
+      .locator('.inventory_item', { hasText: productName })
+      .locator('.inventory_item_price');
+  }
+
   async sortBy(option: SortOption): Promise<void> {
     await this.sortDropdown.selectOption(option);
   }
