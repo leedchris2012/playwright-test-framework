@@ -5,12 +5,14 @@ export type SortOption = 'az' | 'za' | 'lohi' | 'hilo';
 export class InventoryPage {
   readonly page: Page;
   readonly cartBadge: Locator;
+  readonly cartIcon: Locator;
   readonly sortDropdown: Locator;
   readonly firstItemName: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.cartBadge = page.locator('.shopping_cart_badge');
+    this.cartIcon = page.locator('.shopping_cart_link');
     this.sortDropdown = page.locator('[data-test="product-sort-container"]');
     this.firstItemName = page.locator('.inventory_item_name').first();
   }
