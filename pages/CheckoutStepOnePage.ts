@@ -6,6 +6,7 @@ export class CheckoutStepOnePage {
   readonly lastNameInput: Locator;
   readonly zipInput: Locator;
   readonly continueButton: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -13,6 +14,7 @@ export class CheckoutStepOnePage {
     this.lastNameInput = page.locator('[data-test="lastName"]');
     this.zipInput = page.locator('[data-test="postalCode"]');
     this.continueButton = page.locator('[data-test="continue"]');
+    this.errorMessage = page.locator('[data-test="error"]');
   }
 
   async fillInfo(

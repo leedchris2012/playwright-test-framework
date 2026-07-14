@@ -26,6 +26,19 @@ async function checkoutBackpack(page: import('@playwright/test').Page) {
   await stepTwoPage.finishButton.click();
 }
 
+async function reachCheckoutStepOne(page: import('@playwright/test').Page) {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('standard_user', 'secret_sauce');
+
+  const inventoryPage = new InventoryPage(page);
+  await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();
+  await inventoryPage.cartIcon.click();
+
+  const cartPage = new CartPage(page);
+  await cartPage.checkoutButton.click();
+}
+
 function todayDateString(): string {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -73,6 +86,42 @@ test('finishing checkout shows the order confirmation page', async ({ page }) =>
   );
   await expect(completePage.backHomeButton).toBeVisible();
   await expect(completePage.generatePdfButton).toBeVisible();
+});
+
+test('checkout step one requires a first name', async ({ page }) => {
+  await reachCheckoutStepOne(page);
+
+  const stepOnePage = new CheckoutStepOnePage(page);
+  await stepOnePage.lastNameInput.fill('Doe');
+  await stepOnePage.zipInput.fill('12345');
+  await stepOnePage.continueButton.click();
+
+  await expect(stepOnePage.errorMessage).toHaveText('Error: First Name is required');
+  await expect(page).toHaveURL(/.*checkout-step-one\.html/);
+});
+
+test('checkout step one requires a last name', async ({ page }) => {
+  await reachCheckoutStepOne(page);
+
+  const stepOnePage = new CheckoutStepOnePage(page);
+  await stepOnePage.firstNameInput.fill('John');
+  await stepOnePage.zipInput.fill('12345');
+  await stepOnePage.continueButton.click();
+
+  await expect(stepOnePage.errorMessage).toHaveText('Error: Last Name is required');
+  await expect(page).toHaveURL(/.*checkout-step-one\.html/);
+});
+
+test('checkout step one requires a postal code', async ({ page }) => {
+  await reachCheckoutStepOne(page);
+
+  const stepOnePage = new CheckoutStepOnePage(page);
+  await stepOnePage.firstNameInput.fill('John');
+  await stepOnePage.lastNameInput.fill('Doe');
+  await stepOnePage.continueButton.click();
+
+  await expect(stepOnePage.errorMessage).toHaveText('Error: Postal Code is required');
+  await expect(page).toHaveURL(/.*checkout-step-one\.html/);
 });
 
 test('generating a PDF order downloads a file dated today', async ({ page }) => {
