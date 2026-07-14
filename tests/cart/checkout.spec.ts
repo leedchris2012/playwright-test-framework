@@ -47,6 +47,8 @@ function todayDateString(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// Checks that going through checkout with an item carries the correct
+// price all the way to the order summary step.
 test('completes checkout info steps with correct item total', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
@@ -75,6 +77,8 @@ test('completes checkout info steps with correct item total', async ({ page }) =
   await expect(stepTwoPage.itemTotal).toHaveText(`Item total: ${backpackPrice}`);
 });
 
+// Checks that completing a purchase shows the "Thank you for your order!"
+// confirmation page with its buttons.
 test('finishing checkout shows the order confirmation page', async ({ page }) => {
   await checkoutBackpack(page);
 
@@ -88,6 +92,8 @@ test('finishing checkout shows the order confirmation page', async ({ page }) =>
   await expect(completePage.generatePdfButton).toBeVisible();
 });
 
+// Checks that leaving "First Name" blank on the checkout form blocks
+// checkout and shows the right error message.
 test('checkout step one requires a first name', async ({ page }) => {
   await reachCheckoutStepOne(page);
 
@@ -100,6 +106,8 @@ test('checkout step one requires a first name', async ({ page }) => {
   await expect(page).toHaveURL(/.*checkout-step-one\.html/);
 });
 
+// Checks that leaving "Last Name" blank on the checkout form blocks
+// checkout and shows the right error message.
 test('checkout step one requires a last name', async ({ page }) => {
   await reachCheckoutStepOne(page);
 
@@ -112,6 +120,8 @@ test('checkout step one requires a last name', async ({ page }) => {
   await expect(page).toHaveURL(/.*checkout-step-one\.html/);
 });
 
+// Checks that leaving "Postal Code" blank on the checkout form blocks
+// checkout and shows the right error message.
 test('checkout step one requires a postal code', async ({ page }) => {
   await reachCheckoutStepOne(page);
 
@@ -124,6 +134,8 @@ test('checkout step one requires a postal code', async ({ page }) => {
   await expect(page).toHaveURL(/.*checkout-step-one\.html/);
 });
 
+// Checks that clicking "Generate PDF order" on the confirmation page
+// actually downloads a file, named with today's date.
 test('generating a PDF order downloads a file dated today', async ({ page }) => {
   await checkoutBackpack(page);
 

@@ -3,6 +3,7 @@ import { LoginPage } from '../../pages/LoginPage';
 import { InventoryPage } from '../../pages/InventoryPage';
 import { CartPage } from '../../pages/CartPage';
 
+// Checks that adding one item to the cart makes the cart icon show "1".
 test('adds Sauce Labs Backpack to cart', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
@@ -14,6 +15,8 @@ test('adds Sauce Labs Backpack to cart', async ({ page }) => {
   await expect(inventoryPage.cartBadge).toHaveText('1');
 });
 
+// Checks that adding two different items shows a cart count of "2", and
+// that the cart page lists both items with their correct prices.
 test('adds multiple items to cart and shows both with correct prices', async ({
   page,
 }) => {

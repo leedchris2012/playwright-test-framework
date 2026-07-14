@@ -3,6 +3,8 @@ import { LoginPage } from '../../pages/LoginPage';
 import { InventoryPage } from '../../pages/InventoryPage';
 import { CartPage } from '../../pages/CartPage';
 
+// Checks that after adding an item, the cart page displays the right
+// product name and price.
 test('cart page shows the correct item and price after adding Sauce Labs Backpack', async ({
   page,
 }) => {
@@ -21,6 +23,7 @@ test('cart page shows the correct item and price after adding Sauce Labs Backpac
   await expect(cartPage.itemPrice).toHaveText('$29.99');
 });
 
+// Checks that clicking "Remove" on a cart item actually takes it out of the cart.
 test('removing an item from the cart page removes it', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();

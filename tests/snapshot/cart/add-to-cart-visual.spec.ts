@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../../pages/LoginPage';
 import { InventoryPage } from '../../../pages/InventoryPage';
 
+// Visual check: takes a screenshot of the Products page after adding an
+// item, and compares it pixel-for-pixel against a saved reference image
+// to catch unexpected visual changes.
 test('inventory page after adding Sauce Labs Backpack to cart matches baseline', async ({
   page,
 }) => {
