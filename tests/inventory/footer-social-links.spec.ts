@@ -1,13 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
 import { InventoryPage } from '../../pages/InventoryPage';
+
+test.use({ storageState: '.auth/standard_user.json' });
 
 // Checks that the footer's social icons are visible, point to the right
 // profile, and open in a new tab rather than navigating away from the app.
 test('footer social icons link to the correct profiles and open in a new tab', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('standard_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   const inventoryPage = new InventoryPage(page);
 

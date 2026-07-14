@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
 import { InventoryPage } from '../../pages/InventoryPage';
+
+test.use({ storageState: '.auth/visual_user.json' });
 
 // Bug check: for the "visual_user" test account, the shopping cart icon
 // in the header renders in the wrong position. For standard_user it sits
@@ -8,9 +9,7 @@ import { InventoryPage } from '../../pages/InventoryPage';
 // and down, around {x: 1034, y: 39}. Verified live across repeat loads —
 // the icon's malposition is consistent (unlike the price bug below).
 test('visual_user: cart icon renders in the wrong position', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('visual_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   const inventoryPage = new InventoryPage(page);
   const cartBox = await inventoryPage.cartIcon.boundingBox();
@@ -38,9 +37,7 @@ test('visual_user: inventory prices do not match the real catalog prices', async
     'Test.allTheThings() T-Shirt (Red)': '$15.99',
   };
 
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('visual_user', 'secret_sauce');
+  await page.goto('/inventory.html');
 
   const inventoryPage = new InventoryPage(page);
 
