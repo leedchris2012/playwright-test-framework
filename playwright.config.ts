@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   reporter: 'html',
   use: {
-    baseURL: 'https://demo.nopcommerce.com',
+    baseURL: 'https://www.saucedemo.com',
     trace: 'on-first-retry',
   },
   projects: [
