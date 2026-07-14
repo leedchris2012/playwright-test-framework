@@ -46,6 +46,12 @@ export class InventoryPage {
       .locator('button');
   }
 
+  getRemoveButton(productName: string): Locator {
+    return this.page
+      .locator('.inventory_item', { hasText: productName })
+      .locator('button');
+  }
+
   getItemPrice(productName: string): Locator {
     return this.page
       .locator('.inventory_item', { hasText: productName })

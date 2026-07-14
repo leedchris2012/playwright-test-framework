@@ -38,3 +38,33 @@ test('adds multiple items to cart and shows both with correct prices', async ({
   await expect(cartPage.getItemPrice('Sauce Labs Backpack')).toHaveText('$29.99');
   await expect(cartPage.getItemPrice('Sauce Labs Bolt T-Shirt')).toHaveText('$15.99');
 });
+
+// Checks that adding an item swaps its inventory-page button from "Add to
+// cart" to "Remove".
+test('shows a Remove button on the inventory page after adding an item to cart', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('standard_user', 'secret_sauce');
+
+  const inventoryPage = new InventoryPage(page);
+  await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();
+
+  await expect(inventoryPage.getRemoveButton('Sauce Labs Backpack')).toHaveText('Remove');
+});
+
+// Checks that clicking Remove on the inventory page takes the item out of
+// the cart and swaps the button back to "Add to cart".
+test('clicking Remove on the inventory page removes the item from the cart and reverts the button', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('standard_user', 'secret_sauce');
+
+  const inventoryPage = new InventoryPage(page);
+  await inventoryPage.getAddToCartButton('Sauce Labs Backpack').click();
+  await expect(inventoryPage.cartBadge).toHaveText('1');
+
+  await inventoryPage.getRemoveButton('Sauce Labs Backpack').click();
+
+  await expect(inventoryPage.cartBadge).toHaveCount(0);
+  await expect(inventoryPage.getAddToCartButton('Sauce Labs Backpack')).toHaveText('Add to cart');
+});
