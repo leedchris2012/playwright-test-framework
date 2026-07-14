@@ -18,4 +18,10 @@ export class CartPage {
       .locator('.cart_item', { hasText: productName })
       .locator('button');
   }
+
+  getItemPrice(productName: string): Locator {
+    return this.page
+      .locator('.cart_item', { hasText: productName })
+      .locator('.inventory_item_price');
+  }
 }
