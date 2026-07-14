@@ -52,3 +52,14 @@ test('submitting with empty fields shows a required-field error', async ({ page 
   await expect(page).toHaveURL('https://www.saucedemo.com/');
   await expect(loginPage.errorMessage).toHaveText('Epic sadface: Username is required');
 });
+
+test('direct navigation to inventory.html without logging in is blocked', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+
+  await page.goto('/inventory.html');
+
+  await expect(loginPage.loginButton).toBeVisible();
+  await expect(loginPage.errorMessage).toHaveText(
+    "Epic sadface: You can only access '/inventory.html' when you are logged in."
+  );
+});
