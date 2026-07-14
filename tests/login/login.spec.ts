@@ -62,6 +62,32 @@ test('submitting with empty fields shows a required-field error', async ({ page 
   await expect(loginPage.errorMessage).toHaveText('Epic sadface: Username is required');
 });
 
+// Checks that leaving the password blank is rejected with its own
+// specific error, not just the generic username-required one.
+test('submitting with no password shows a required-field error', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+
+  await loginPage.usernameInput.fill('standard_user');
+  await loginPage.loginButton.click();
+
+  await expect(page).toHaveURL('https://www.saucedemo.com/');
+  await expect(loginPage.errorMessage).toHaveText('Epic sadface: Password is required');
+});
+
+// Checks that leaving the username blank is rejected, even when a
+// valid password is supplied.
+test('submitting with no username shows a required-field error', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+
+  await loginPage.passwordInput.fill('secret_sauce');
+  await loginPage.loginButton.click();
+
+  await expect(page).toHaveURL('https://www.saucedemo.com/');
+  await expect(loginPage.errorMessage).toHaveText('Epic sadface: Username is required');
+});
+
 // Security check: typing the Products page address directly into the
 // browser (without logging in first) is blocked, not just skipped past.
 test('direct navigation to inventory.html without logging in is blocked', async ({ page }) => {
