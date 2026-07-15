@@ -65,9 +65,16 @@ npx playwright test --debug
 
 ```
 pages/      Page object models (LoginPage, InventoryPage, CartPage, CheckoutStepOnePage, CheckoutStepTwoPage, CheckoutCompletePage, ProductDetailsPage)
+tests/setup/  Auth setup project — logs in once per test account, saves session state to .auth/ for reuse
 tests/      Functional tests, organized by feature (login, inventory, cart, filter)
 tests/snapshot/   Visual regression tests (Chromium only), organized to mirror tests/
 ```
+
+## Authentication
+
+Most tests don't need to exercise the login form — they reuse a saved session instead. A dedicated `setup` project (`tests/setup/auth.setup.ts`) logs in once per account (`standard_user`, `problem_user`, `visual_user`, `error_user`) before the main test projects run, saving each session to `.auth/<account>.json` (gitignored, regenerated every run). Spec files opt in with `test.use({ storageState: '.auth/<account>.json' })`, either at the top of the file for single-account specs or inside a `test.describe` block when a file covers more than one account.
+
+Two cases always drive the real login form instead: `tests/login/login.spec.ts` (login behavior is the thing under test) and the `locked_out_user` account (it never reaches an authenticated session, so no storage state exists for it).
 
 ## Bugs Documented
 
