@@ -1,5 +1,7 @@
 # Sauce Demo Playwright Test Suite
 
+[![Playwright Tests](https://github.com/leedchris2012/playwright-test-framework/actions/workflows/playwright.yml/badge.svg)](https://github.com/leedchris2012/playwright-test-framework/actions/workflows/playwright.yml)
+
 An end-to-end test suite built with [Playwright](https://playwright.dev/) against [saucedemo.com](https://www.saucedemo.com), a sandbox e-commerce site that ships with intentional bugs tied to specific test user accounts. This project is a portfolio piece demonstrating test design, page object structure, and bug-catching (functional + visual regression) testing.
 
 ## Setup
