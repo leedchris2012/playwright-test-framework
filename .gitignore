@@ -7,3 +7,4 @@ playwright/.cache/
 .claude/
 skills-lock.json
 .auth/
+docs/superpowers/
