@@ -9,12 +9,14 @@
   "scripts": {
     "test": "playwright test",
     "test:functional": "playwright test tests/cart tests/filter tests/inventory tests/login",
-    "test:snapshot": "playwright test tests/snapshot --project=chromium"
+    "test:snapshot": "playwright test tests/snapshot --project=chromium",
+    "test:a11y": "playwright test tests/accessibility"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.1",
     "typescript": "^7.0.2"

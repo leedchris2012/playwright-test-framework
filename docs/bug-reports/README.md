@@ -1,6 +1,6 @@
 # Bug Reports
 
-Eight defects found while testing [saucedemo.com](https://www.saucedemo.com), written up the way I'd file them on a real project. Saucedemo is a training/demo site maintained by Sauce Labs that ships these bugs on purpose, tied to specific login accounts (`visual_user`, `problem_user`, `error_user`, `performance_glitch_user`) — so every report below is marked **Won't Fix (intentional demo defect)**. The point of this folder isn't to get them fixed; it's to show the reasoning: severity vs. priority, repro steps, expected vs. actual, and a link to the automated regression test that pins the behavior.
+Nine defects found while testing [saucedemo.com](https://www.saucedemo.com), written up the way I'd file them on a real project. The first eight are tied to specific login accounts (`visual_user`, `problem_user`, `error_user`, `performance_glitch_user`) that Sauce Labs ships with intentional bugs baked in, so those are marked **Won't Fix (intentional demo defect)**. BUG-009 is different: a real, account-independent accessibility markup defect found via automated `axe-core` scanning, marked **Won't Fix (third-party site)** since it's still outside this project's control to fix, but it isn't one of Sauce Labs' deliberate demo bugs. The point of this folder isn't to get them fixed; it's to show the reasoning: severity vs. priority, repro steps, expected vs. actual, and a link to the automated regression test that pins the behavior.
 
 Each bug report also cross-references the Playwright spec and test name that catches it, so you can see the report and the automation that codifies it side by side.
 
@@ -32,3 +32,4 @@ Rated independently, the way I'd rate them on a real e-commerce app rather than 
 | [BUG-006](BUG-006-problem-user-broken-images.md) | problem_user | Every product shows the same broken image | Low | P3 | Won't Fix (demo) |
 | [BUG-007](BUG-007-visual-user-cart-icon-position.md) | visual_user | Cart icon renders in the wrong position in the header | Low | P3 | Won't Fix (demo) |
 | [BUG-008](BUG-008-performance-glitch-user-slow-login.md) | performance_glitch_user | Login takes ~5s instead of the normal <100ms | Low | P4 | Won't Fix (demo) |
+| [BUG-009](BUG-009-inventory-sort-dropdown-no-accessible-name.md) | all accounts | Product sort dropdown has no accessible name (WCAG 2.0 A) | High | P1 | Won't Fix (3rd-party) |
