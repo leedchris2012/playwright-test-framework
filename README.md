@@ -2,7 +2,7 @@
 
 [![Playwright Tests](https://github.com/leedchris2012/playwright-test-framework/actions/workflows/playwright.yml/badge.svg)](https://github.com/leedchris2012/playwright-test-framework/actions/workflows/playwright.yml)
 
-An end-to-end test suite built with [Playwright](https://playwright.dev/) against [saucedemo.com](https://www.saucedemo.com), a sandbox e-commerce site that ships with intentional bugs tied to specific test user accounts. This project is a portfolio piece demonstrating test design, page object structure, and bug-catching (functional, visual regression, and accessibility) testing.
+An end-to-end test suite built with [Playwright](https://playwright.dev/) against [saucedemo.com](https://www.saucedemo.com), a sandbox e-commerce site that ships with intentional bugs tied to specific test user accounts. This project is a portfolio piece demonstrating test design, page object structure, and bug-catching (functional, visual regression, accessibility, and network resilience) testing.
 
 ## Setup
 
@@ -44,6 +44,13 @@ npx playwright test tests/accessibility
 npm run test:a11y
 ```
 
+Run only network mocking / resilience tests:
+```bash
+npx playwright test tests/network
+# or:
+npm run test:network
+```
+
 Run a specific file:
 ```bash
 npx playwright test tests/snapshot/cart/checkout-complete-visual.spec.ts
@@ -78,6 +85,7 @@ tests/setup/  Auth setup project — logs in once per test account, saves sessio
 tests/      Functional tests, organized by feature (login, inventory, cart, filter)
 tests/snapshot/   Visual regression tests (Chromium only), organized to mirror tests/
 tests/accessibility/   Automated a11y scans (axe-core), one spec per key page
+tests/network/   page.route() network resilience tests (third-party telemetry, broken/slow assets)
 ```
 
 ## Authentication
@@ -106,11 +114,21 @@ One real, reproducible defect was found this way and documented in [BUG-009](doc
 
 **Known gap**: this is automated scanning only (axe-core's static/DOM-based rule checks), not a manual screen-reader or keyboard-navigation pass, and only `standard_user` is scanned — it doesn't check whether the other test accounts' bugs (e.g. `problem_user`'s broken images) introduce additional accessibility issues like missing alt text.
 
+## Network Mocking
+
+`tests/network/` uses Playwright's `page.route()` to intercept and manipulate real network requests — but the scope here is shaped by what saucedemo.com actually does on the wire, confirmed by logging every request the app makes: there's no product/cart/checkout API to intercept (the catalog is baked into the JS bundle, and login is checked client-side against a hardcoded list), so the classic "mock the API response" pattern doesn't apply. The only real `fetch()` calls anywhere on the site are third-party telemetry beacons to `events.backtrace.io`.
+
+Three specs test resilience instead of mocking data:
+
+- **`telemetry-resilience.spec.ts`**: aborts every `events.backtrace.io` request and confirms the full login → add-to-cart → checkout flow still completes — a realistic "does a third-party dependency outage break core functionality" check.
+- **`broken-image-resilience.spec.ts`**: aborts a single product image request and confirms the inventory page stays usable and the item is still addable to cart.
+- **`slow-network-resilience.spec.ts`**: delays (rather than fails) a product image response by 3s, and checks two things — the rest of the page (name, price) isn't blocked waiting on that one slow image, and the image itself eventually loads correctly once the delay elapses. Uses `waitForResponse()` so the test genuinely depends on the delay completing, rather than passing regardless of whether the slow request ever resolves.
+
 ## CI Architecture
 
 `.github/workflows/playwright.yml` splits the suite across three job types rather than one monolithic run:
 
-- **`test` matrix**: functional + accessibility specs, run across a `project × shard` matrix (`chromium`/`firefox`/`webkit` × 2 shards each = 6 parallel jobs). This is also what closed a real gap — CI previously only ran `test:functional` and never ran `tests/accessibility` at all.
+- **`test` matrix**: functional + accessibility + network specs, run across a `project × shard` matrix (`chromium`/`firefox`/`webkit` × 2 shards each = 6 parallel jobs). This is also what closed a real gap — CI previously only ran `test:functional` and never ran `tests/accessibility` at all.
 - **`snapshot` job**: chromium-only, unsharded — the visual regression suite is small and single-browser, so splitting it further wouldn't buy anything.
 - **`merge-reports` job**: downloads every shard's blob report, merges them into one HTML report artifact, and posts a flaky-test count to the workflow's job summary.
 

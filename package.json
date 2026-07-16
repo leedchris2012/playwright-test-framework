@@ -10,7 +10,8 @@
     "test": "playwright test",
     "test:functional": "playwright test tests/cart tests/filter tests/inventory tests/login",
     "test:snapshot": "playwright test tests/snapshot --project=chromium",
-    "test:a11y": "playwright test tests/accessibility"
+    "test:a11y": "playwright test tests/accessibility",
+    "test:network": "playwright test tests/network"
   },
   "keywords": [],
   "author": "",
