@@ -2,7 +2,7 @@
 
 **Account:** `performance_glitch_user`
 **Date found:** 2026-07-14
-**Environment:** https://www.saucedemo.com, Chromium (Playwright)
+**Environment:** https://www.saucedemo.com, Chromium/Firefox/WebKit (Playwright)
 **Severity:** Low
 **Priority:** P4
 **Status:** Won't Fix (intentional demo defect)

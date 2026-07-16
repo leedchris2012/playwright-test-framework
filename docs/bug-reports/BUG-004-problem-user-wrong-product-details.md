@@ -5,7 +5,7 @@
 **Environment:** https://www.saucedemo.com, Chromium/Firefox/WebKit (Playwright)
 **Severity:** Medium
 **Priority:** P2
-**Status:** Won't Fix (intentional demo defect) — **currently unresolved / open in the test suite**, see note below
+**Status:** Won't Fix (intentional demo defect)
 
 ## Summary
 

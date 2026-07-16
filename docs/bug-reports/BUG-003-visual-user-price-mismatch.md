@@ -2,7 +2,7 @@
 
 **Account:** `visual_user`
 **Date found:** 2026-07-14
-**Environment:** https://www.saucedemo.com, Chromium (Playwright)
+**Environment:** https://www.saucedemo.com, Chromium/Firefox/WebKit (Playwright)
 **Severity:** High
 **Priority:** P1
 **Status:** Won't Fix (intentional demo defect)

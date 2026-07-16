@@ -65,5 +65,5 @@ Documented deliberately rather than left implicit, since an accurate plan says w
 
 ## 7. Entry / Exit Criteria
 
-- **Entry**: `npm ci` succeeds, target environment (saucedemo.com) is reachable, auth setup project runs successfully for all 6 accounts.
+- **Entry**: `npm ci` succeeds, target environment (saucedemo.com) is reachable, auth setup project runs successfully for the 4 accounts requiring pre-authenticated storage state (`standard_user`, `problem_user`, `visual_user`, `error_user`). `locked_out_user` and `performance_glitch_user` are exercised directly through the login flow in `tests/login/login.spec.ts` and don't need storage state.
 - **Exit**: All specs pass on Chromium/Firefox/WebKit (functional) and Chromium (visual), except tests intentionally marked `test.fail()` documenting known open bugs (currently BUG-004). CI is green; HTML report artifact is available for review.

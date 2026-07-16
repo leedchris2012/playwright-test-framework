@@ -15,8 +15,9 @@ For the `problem_user` account, selecting any option from the product sort dropd
 
 1. Log in as `problem_user` / `secret_sauce`
 2. On the inventory page, note the default item order
-3. Select "Price (low to high)" from the sort dropdown
+3. Select "Name (Z to A)" from the sort dropdown
 4. Observe item order
+5. Repeat with the other three sort options (Name A–Z, Price low–high, Price high–low)
 
 ## Expected Result
 
@@ -34,4 +35,4 @@ A whole feature (product sorting) is non-functional for this account, but it's a
 
 `tests/filter/sort-dropdown.spec.ts` → `problem_user: sorting has no effect on item order`
 
-Selects a sort option and asserts the resulting item order is unchanged from the pre-sort order, in contrast to the passing `standard_user` sort tests in the same file that assert the order does change.
+Selects "Name (Z to A)" and asserts the resulting item order is unchanged from the pre-sort order, in contrast to the passing `standard_user` sort tests in the same file that assert the order does change. This automated check covers one representative sort mode; all four were confirmed broken during exploratory testing (see [CHARTER-002](../exploratory-charters/CHARTER-002-catalog-integrity.md)), but only one is codified as a regression test since all four share the same underlying rendering defect.
