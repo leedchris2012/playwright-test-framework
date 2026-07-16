@@ -106,6 +106,18 @@ One real, reproducible defect was found this way and documented in [BUG-009](doc
 
 **Known gap**: this is automated scanning only (axe-core's static/DOM-based rule checks), not a manual screen-reader or keyboard-navigation pass, and only `standard_user` is scanned — it doesn't check whether the other test accounts' bugs (e.g. `problem_user`'s broken images) introduce additional accessibility issues like missing alt text.
 
+## CI Architecture
+
+`.github/workflows/playwright.yml` splits the suite across three job types rather than one monolithic run:
+
+- **`test` matrix**: functional + accessibility specs, run across a `project × shard` matrix (`chromium`/`firefox`/`webkit` × 2 shards each = 6 parallel jobs). This is also what closed a real gap — CI previously only ran `test:functional` and never ran `tests/accessibility` at all.
+- **`snapshot` job**: chromium-only, unsharded — the visual regression suite is small and single-browser, so splitting it further wouldn't buy anything.
+- **`merge-reports` job**: downloads every shard's blob report, merges them into one HTML report artifact, and posts a flaky-test count to the workflow's job summary.
+
+**Flake handling**: `playwright.config.ts` sets `retries: process.env.CI ? 2 : 0` — local runs stay deterministic (fail on the first try, no masking), while CI gets two retries so a real transient flake doesn't fail the build outright. Retried-but-eventually-passing tests are tagged `flaky` by Playwright's reporter; the merge job parses the merged JSON report's `stats.flaky` count and writes a warning to the GitHub Actions job summary, so a flaky test is visible without anyone opening the HTML report.
+
+**Known gap**: this surfaces flakiness, it doesn't quarantine it — there's no mechanism yet to tag a chronically-flaky test and run it non-blocking/separately. Not built because there isn't a concretely-known chronically-flaky test to quarantine right now (the webkit flakiness seen during the storage-state migration was intermittent/environmental, not tied to one pinned test); that infrastructure would be the next step if one emerged.
+
 ## Notes
 
 - Base URL and browser projects are configured in `playwright.config.ts`.

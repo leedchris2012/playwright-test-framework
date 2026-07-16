@@ -10,6 +10,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+        shard: [1/2, 2/2]
     steps:
       - uses: actions/checkout@v4
 
@@ -21,14 +26,88 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        # The 'setup' project (auth.setup.ts) has no explicit browserName, so
+        # it always launches Chromium regardless of which browser this job is
+        # testing — every matrix job needs Chromium installed too, not just
+        # its own ${{ matrix.project }}.
+        run: npx playwright install --with-deps chromium ${{ matrix.project }}
 
-      - name: Run functional tests
-        run: npm run test:functional
+      - name: Run functional + accessibility tests
+        run: npx playwright test tests/cart tests/filter tests/inventory tests/login tests/accessibility --project=${{ matrix.project }} --shard=${{ matrix.shard }}
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload blob report
         if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.project }}-${{ strategy.job-index }}
+          path: blob-report/
+          retention-days: 14
+
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run snapshot tests
+        run: npm run test:snapshot
+
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-snapshot
+          path: blob-report/
+          retention-days: 14
+
+  merge-reports:
+    if: ${{ !cancelled() }}
+    needs: [test, snapshot]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge into HTML report
+        run: npx playwright merge-reports --reporter=html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+      - name: Summarize flaky tests
+        run: |
+          npx playwright merge-reports --reporter=json ./all-blob-reports > merged-results.json
+          flaky_count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('merged-results.json', 'utf8')).stats.flaky)")
+          if [ "$flaky_count" -gt 0 ]; then
+            echo "### :warning: $flaky_count flaky test(s) detected (passed on retry)" >> "$GITHUB_STEP_SUMMARY"
+            echo "See the merged HTML report artifact for details." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### :white_check_mark: No flaky tests detected" >> "$GITHUB_STEP_SUMMARY"
+          fi

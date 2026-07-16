@@ -31,7 +31,7 @@ Define the scope, risk assessment, and test approach for the automated suite in 
 | Browsers (visual/snapshot) | Chromium only — see [Section 6](#6-out-of-scope--known-gaps) |
 | Test accounts | `standard_user`, `locked_out_user`, `problem_user`, `performance_glitch_user`, `error_user`, `visual_user` (all `secret_sauce`) |
 | Auth strategy | Storage state captured once per account in `tests/setup/auth.setup.ts`, reused across specs to avoid re-logging-in per test |
-| CI | GitHub Actions, runs on push; HTML report published as an artifact |
+| CI | GitHub Actions, runs on push/PR; sharded across browsers, merged into one HTML report artifact — see [README § CI Architecture](../README.md#ci-architecture) |
 
 ## 4. Risk Assessment
 
