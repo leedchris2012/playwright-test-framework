@@ -108,7 +108,7 @@ Each bug is covered by a functional assertion test, and select cases (login erro
 
 ## Accessibility Testing
 
-`tests/accessibility/` runs [`@axe-core/playwright`](https://www.npmjs.com/package/@axe-core/playwright) scans, tagged to the WCAG 2.0/2.1 A/AA rule set, against seven key pages under `standard_user`: login (unauthenticated), inventory, product details, cart, and all three checkout steps. Cart and checkout pages are scanned in their realistic, populated state (item actually in the cart) by walking the same add-to-cart → checkout flow the functional suite uses, not by jumping directly to a URL.
+`tests/accessibility/` runs [`@axe-core/playwright`](https://www.npmjs.com/package/@axe-core/playwright) scans, tagged to the WCAG 2.0 A/AA rule set, against seven key pages under `standard_user`: login (unauthenticated), inventory, product details, cart, and all three checkout steps. Cart and checkout pages are scanned in their realistic, populated state (item actually in the cart) by walking the same add-to-cart → checkout flow the functional suite uses, not by jumping directly to a URL.
 
 One real, reproducible defect was found this way and documented in [BUG-009](docs/bug-reports/BUG-009-inventory-sort-dropdown-no-accessible-name.md): the inventory page's sort `<select>` had no accessible name, a critical-impact WCAG 2.0 A violation on Chromium/Firefox/WebKit alike. The test was pinned with `test.fail()`, the same pattern used elsewhere in this suite to document a known bug without turning CI red. When Sauce Labs fixed it (verified 2026-10-15), the mark flipped the test to a failure and flagged the change; the scan now guards against regression.
 
