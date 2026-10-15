@@ -9,3 +9,4 @@ playwright/.cache/
 skills-lock.json
 .auth/
 docs/superpowers/
+.playwright-mcp/
