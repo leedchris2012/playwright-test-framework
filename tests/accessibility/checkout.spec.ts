@@ -34,21 +34,21 @@ async function reachCheckoutStepTwo(page: import('@playwright/test').Page): Prom
 test.describe('standard_user', () => {
   test.use({ storageState: '.auth/standard_user.json' });
 
-  test('checkout step one has no WCAG 2.0/2.1 A/AA violations', async ({ page }) => {
+  test('checkout step one has no WCAG 2.0 A/AA violations', async ({ page }) => {
     await reachCheckoutStepOne(page);
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(results.violations).toEqual([]);
   });
 
-  test('checkout step two has no WCAG 2.0/2.1 A/AA violations', async ({ page }) => {
+  test('checkout step two has no WCAG 2.0 A/AA violations', async ({ page }) => {
     await reachCheckoutStepTwo(page);
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(results.violations).toEqual([]);
   });
 
-  test('checkout complete page has no WCAG 2.0/2.1 A/AA violations', async ({ page }) => {
+  test('checkout complete page has no WCAG 2.0 A/AA violations', async ({ page }) => {
     await reachCheckoutStepTwo(page);
 
     const stepTwoPage = new CheckoutStepTwoPage(page);

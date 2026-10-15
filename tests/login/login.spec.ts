@@ -114,11 +114,9 @@ test('logging out returns to the login page', async ({ page }) => {
   await expect(loginPage.loginButton).toBeVisible();
 });
 
-// Bug check: performance_glitch_user has an artificial ~5 second delay
-// baked into its login (confirmed live: standard_user resolves in well
-// under 100ms, performance_glitch_user consistently takes 5+ seconds).
-// A 3 second threshold catches that delay with headroom below the ~5s
-// actual value, without being so tight that normal network jitter fails it.
+// Bug check: performance_glitch_user has an artificial ~5 s delay after login. In this SPA
+// the URL can change before the delay finishes, so the timer stops when the product list is visible.
+// A 3 s threshold catches the delay with headroom, without failing on normal jitter.
 test('performance_glitch_user: login takes noticeably longer than a normal login', async ({
   page,
 }) => {
@@ -128,10 +126,15 @@ test('performance_glitch_user: login takes noticeably longer than a normal login
   await loginPage.usernameInput.fill('performance_glitch_user');
   await loginPage.passwordInput.fill('secret_sauce');
 
+  const inventoryPage = new InventoryPage(page);
   const start = Date.now();
   await loginPage.loginButton.click();
-  await expect(page).toHaveURL(/.*inventory\.html/);
+
+  await expect(inventoryPage.productsListInventory).toBeVisible({ timeout: 10_000 });
+
   const elapsed = Date.now() - start;
 
+  await expect(page).toHaveURL(/.*inventory\.html/);
   expect(elapsed).toBeGreaterThan(3000);
 });
+

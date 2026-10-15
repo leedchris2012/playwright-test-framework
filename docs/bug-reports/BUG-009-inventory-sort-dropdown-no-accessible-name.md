@@ -2,10 +2,10 @@
 
 **Account:** All accounts (structural page markup, not account-specific)
 **Date found:** 2026-07-15
-**Environment:** https://www.saucedemo.com/inventory.html, Chromium/Firefox/WebKit (Playwright + `@axe-core/playwright`, WCAG 2.0/2.1 A/AA ruleset)
+**Environment:** https://www.saucedemo.com/inventory.html, Chromium/Firefox/WebKit (Playwright + `@axe-core/playwright`, WCAG 2.0 A/AA ruleset)
 **Severity:** High
 **Priority:** P1
-**Status:** Won't Fix (third-party site, outside this project's control) — distinct from BUG-001–008: this is a genuine markup defect, not one of Sauce Labs' intentional per-account demo bugs.
+**Status:** Fixed upstream (verified 2026-10-15). Originally Won't Fix (third-party site, outside this project's control) — distinct from BUG-001–008: this is a genuine markup defect, not one of Sauce Labs' intentional per-account demo bugs.
 
 ## Summary
 
@@ -14,7 +14,7 @@ The product sort control on the inventory page (`<select data-test="product-sort
 ## Steps to Reproduce
 
 1. Log in as any account (e.g. `standard_user` / `secret_sauce`)
-2. On the inventory page, run an automated accessibility scan (axe-core, WCAG 2.0/2.1 A/AA tags) or inspect the sort `<select>` with a screen reader
+2. On the inventory page, run an automated accessibility scan (axe-core, WCAG 2.0 A/AA tags) or inspect the sort `<select>` with a screen reader
 3. Observe the control has no accessible name
 
 ## Expected Result
@@ -29,8 +29,15 @@ axe-core reports a `critical`-impact `select-name` violation: no implicit label,
 
 Users relying on screen readers or other assistive technology cannot reliably discover or use the product sorting feature — a real access barrier, not a cosmetic issue. For a production e-commerce app this would also be a WCAG 2.0 Level A compliance gap, which carries legal risk in many jurisdictions (e.g. ADA Title III, EN 301 549).
 
+## Resolution
+
+- **Date verified:** 2026-10-15
+- **How detected:** CI reported `Expected to fail, but passed` on the `test.fail()` test, on Chromium, Firefox, and WebKit.
+- **Manual verification:** Chrome DevTools Accessibility pane shows `aria-label="Sort products"` on the `<select>`, computed name "Sort products", role `combobox`.
+- **Test change:** `test.fail()` removed. The scan now runs as a regression guard and fails if `select-name` returns.
+
 ## Automated Coverage
 
-`tests/accessibility/inventory.spec.ts` → `inventory page has no WCAG 2.0/2.1 A/AA violations`
+`tests/accessibility/inventory.spec.ts` → `inventory page has no WCAG 2.0 A/AA violations`
 
-Wrapped in `test.fail()` rather than a normal assertion, since it documents a currently-true bug on the live site — the same pattern used for BUG-004. If Sauce Labs ever adds an accessible name to this control, `test.fail()` flips the result to a suite failure, flagging that this report needs to be revisited.
+A normal assertion that acts as a regression guard: if the sort control loses its accessible name again, axe reports `select-name` and the test fails. Until 2026-10-15 it was wrapped in `test.fail()` to document the live bug (the same pattern used for BUG-004); the mark flagged the upstream fix by turning into a failure.
