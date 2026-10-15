@@ -62,4 +62,22 @@ test.describe('problem_user', () => {
       await expect(detailsPage.itemName).toHaveText('Sauce Labs Backpack');
     }
   );
+
+  // Bug check: same BUG-004 as above, reached through the product image instead of the
+  // name (found by the persona-explorer agent). Clicking the Backpack's image also opens
+  // the Fleece Jacket's details page. Marked test.fail() for the same reason.
+  test.fail(
+    'problem_user: clicking the Sauce Labs Backpack image opens the wrong product details page',
+    async ({ page }) => {
+      await page.goto('/inventory.html');
+
+      const inventoryPage = new InventoryPage(page);
+      await inventoryPage.getItemImage('Sauce Labs Backpack').click();
+
+      await expect(page).toHaveURL(/.*inventory-item\.html\?id=\d+/);
+
+      const detailsPage = new ProductDetailsPage(page);
+      await expect(detailsPage.itemName).toHaveText('Sauce Labs Backpack');
+    }
+  );
 });
