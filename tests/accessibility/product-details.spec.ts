@@ -5,7 +5,7 @@ import { InventoryPage } from '../../pages/InventoryPage';
 test.describe('standard_user', () => {
   test.use({ storageState: '.auth/standard_user.json' });
 
-  test('product details page has no WCAG 2.0/2.1 A/AA violations', async ({ page }) => {
+  test('product details page has no WCAG 2.0 A/AA violations', async ({ page }) => {
     await page.goto('/inventory.html');
 
     const inventoryPage = new InventoryPage(page);

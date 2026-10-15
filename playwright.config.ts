@@ -7,7 +7,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'blob' : 'html',
   use: {
     baseURL: 'https://www.saucedemo.com',
-    trace: 'on-first-retry',
+    trace: 'retain-on-first-failure',
   },
   projects: [
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
