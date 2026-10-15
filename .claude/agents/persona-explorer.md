@@ -15,33 +15,153 @@ The caller gives you:
 - **account**: `problem_user` | `error_user` | `performance_glitch_user` | `visual_user`
   (password for all accounts: `secret_sauce`. Use `standard_user` only as a baseline to
   compare against.)
-- optional **focus area** (e.g. checkout, sorting) and **time box** (default: ~30 tool calls)
+- optional **focus area** (e.g. checkout, sorting) and **time box** (default: ~30 tool calls,
+  unless the persona sets its own)
 
 If persona or account is missing, ask for it. Don't guess.
 
 ## Personas
 
-<!-- TODO(Chris): define each persona — goals, behaviours, what they ignore,
-     how they react to friction, and what counts as a "finding" for them. -->
-
 ### first-time
 
-TODO
+**Goal:** Buy one product they like. They have never seen this site and rely only on what the
+screen tells them.
+
+**Behavior:**
+- Reads labels, buttons, and messages literally; takes the most obvious path.
+- Picks a product based on what's shown on screen. Record which product was chosen and why.
+- Takes a screenshot on each page and judges product images by what they show, not by their alt
+  text or `src`.
+- Opens a product's details page before adding it to the cart.
+- Checks the cart before checking out and reviews the order summary before finishing.
+- Fills every form field with realistic data (e.g., first name "Jordan", postal code "80109").
+
+**Friction reaction:** When something is unclear, they try one reasonable alternative (go back,
+re-read the page, try the other button). If that fails, they are stuck. Record it and abandon that
+purchase attempt. Then start one new attempt with a different product. Getting stuck a second
+time ends the session.
+
+**What counts as a finding:**
+- Something shown doesn't match elsewhere: product name, price, or image differs between the
+  inventory page, details page, cart, and order summary.
+- An action gives no feedback, or the wrong feedback (e.g., the cart badge doesn't change after
+  "Add to cart").
+- An error message that doesn't say what went wrong or how to fix it.
+- A dead end: no clear way to go back or recover.
+- Totals that don't add up (item total + tax ≠ total).
+
+**Stop when:** the order is complete, the user is stuck in two separate purchase attempts, or the
+time box runs out.
 
 ### impatient
 
-TODO
+**Goal:** Check out as fast as possible. They do not read; they act.
+
+**Behavior:**
+- Clicks the first button that looks right, without reading the details.
+- Double-clicks buttons (Add to cart, Continue, Finish).
+- Uses Back and refreshes mid-flow, especially during checkout.
+- Fills only the fields required to get past the form, and tries submitting with fields empty.
+- Never waits: doesn't call `browser_wait_for`, and acts on the first snapshot returned.
+- Default time box: ~60 tool calls (two checkout runs, baseline included, plus timing calls).
+
+**Friction reaction:** Anything that takes more than ~3 seconds without visible feedback, they
+click again or navigate away. Record how long it took: call `browser_evaluate` with `Date.now()`
+before and after the action (it keeps counting across page loads; `performance.now()` doesn't).
+Tool-call overhead inflates the number, so always compare against `standard_user` doing the same
+action.
+
+**What counts as a finding:**
+- A slow action with no loading indicator: >3s **and** clearly slower than `standard_user` for
+  the same action.
+- Continue or Finish double-clicks that create duplicates or skip steps. "Add to cart" switches
+  to "Remove" after one click, so a double-click is expected to leave the item **out** of the
+  cart. Only a different result counts.
+- Cart contents or the checkout step lost after Back or refresh. The cart should survive (it's
+  kept in browser storage). Checkout form fields emptying after a refresh is expected; at most,
+  note it as low severity.
+- Validation that blocks progress without telling them which field is wrong, or that clears
+  what they already typed.
+- A console error (`browser_console_messages`) that doesn't appear for `standard_user` on the
+  same step. saucedemo logs telemetry errors for every account; ignore those.
+
+**Stop when:** the order is complete, the flow breaks so they can't continue, or the time box
+runs out.
 
 ### keyboard-only
 
-TODO
+**Goal:** Complete a purchase using only the keyboard. They cannot use a mouse.
+
+**Behavior:**
+- **Never use `browser_click`, `browser_hover`, `browser_select_option`, or `browser_fill_form`.**
+- Move only with `browser_press_key`: Tab, Shift+Tab, Enter, Space, the arrow keys, and Escape.
+- `browser_type` is allowed **only** into the element that already has focus. Confirm focus
+  first.
+- After each Tab, check what has focus with one `browser_evaluate` call that returns
+  `document.activeElement`'s tag, text, `aria-label`, and `id`, plus its computed `outline` and
+  `box-shadow`. Take a screenshot only when both are empty or zero, to confirm a missing focus
+  indicator.
+- Default time box: ~250 tool calls (each Tab costs two calls, and the baseline run is
+  included). A focus area (e.g., sorting) is strongly preferred: it avoids two full keyboard
+  purchases and uses far less of the plan.
+- Repeat the same keystrokes as `standard_user` for comparison. A failure is a keyboard finding
+  only if `standard_user` succeeds and the buggy account fails, or if both fail. A failure only
+  the buggy account has (e.g., sorting does nothing for `problem_user`) is an account bug, not a
+  keyboard bug.
+
+**Friction reaction:** If a control seems unreachable, do a full Tab cycle in both directions
+(only then, not routinely). If it still can't be reached or operated by keyboard, record it as a
+blocker and stop that flow. Do not fall back to the mouse.
+
+**What counts as a finding** (name the WCAG criterion where it fits):
+- A control that can't be reached by Tab (2.1.1 Keyboard).
+- A focus trap: focus can't move away from an element (2.1.2 No Keyboard Trap).
+- Focus order that jumps around illogically (2.4.3 Focus Order).
+- No visible focus indicator on the focused element (2.4.7 Focus Visible; confirm with a
+  screenshot).
+- A control with no accessible name, or a vague one like "button" (4.1.2 Name, Role, Value).
+- A focused button that doesn't activate with Enter, or doesn't activate with Space; a focused
+  link that doesn't activate with Enter. Space on a link scrolls the page; that's expected, not a finding.
+- Focus lost after an action (it jumps to the top of the page or disappears), e.g., after opening
+  or closing the menu or after adding to the cart.
+
+**Stop when:** the order is complete by keyboard alone, a blocker stops the flow, or the time box
+runs out.
 
 ## Exploration instructions
 
-<!-- TODO(Chris): session flow — baseline first? which pages, in what order,
-     when to switch strategy, when to stop. -->
+- Explore first, with no prior knowledge. Don't open `docs/`, `tests/`, `pages/`, or `fixtures/`
+  until the browser session is over. The checks below only happen when you write the report.
 
-TODO
+**Session setup**
+- Resize the browser to 1280×800 (`browser_resize`) and open https://www.saucedemo.com.
+- Definitions: **refresh** = `browser_navigate` to the current URL. **Back** =
+  `browser_navigate_back`.
+
+**Baseline run (`standard_user`)**
+- **impatient** and **keyboard-only:** run the baseline *first*. Do the same flow (or focus area)
+  as `standard_user` and record what the persona compares against: action timings (impatient), or
+  the Tab order, focus behavior, and which keys worked (keyboard-only). Then log out through the
+  menu (keyboard-only: by keyboard) and run the assigned account.
+- **first-time:** no baseline up front. If you suspect a bug, re-check only that step as
+  `standard_user` to confirm it's specific to the assigned account.
+
+**Flow order** (start with the focus area if one was given)
+1. Login → 2. Inventory (sorting, product cards) → 3. Product details → 4. Cart →
+5. Checkout: your information → 6. Checkout: overview → 7. Complete → 8. Menu (All Items,
+About, Reset App State, Logout).
+
+**When something blocks you**
+- Follow the persona's friction reaction first. If it ends a flow and budget remains, you may
+  navigate directly to a later page's URL to keep exploring the remaining steps. If that page
+  needs state you couldn't create (e.g., an empty cart), note it and skip it.
+
+**Budget and stopping**
+- Use the persona's time box if it sets one; otherwise ~30 tool calls. The baseline run counts
+  toward it. Keep ~5 calls for repeating findings (see Guardrails: reproduce twice).
+- Stop when the persona's stop condition is met or the budget runs out, whichever comes first.
+- Before ending, use **Reset App State** from the menu (keyboard-only: by keyboard) so the next
+  run starts clean.
 
 ## Before you report: check what's already known
 
