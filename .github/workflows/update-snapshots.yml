@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   update-snapshots:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +36,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No baseline changes to commit."
           else
-            git commit -m "test: update snapshot baselines (ubuntu-latest, $(date -u +%Y-%m-%d))"
+            git commit -m "test: update snapshot baselines (ubuntu-24.04, $(date -u +%Y-%m-%d))"
             git push
           fi
