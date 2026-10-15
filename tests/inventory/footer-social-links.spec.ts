@@ -10,8 +10,8 @@ test('footer social icons link to the correct profiles and open in a new tab', a
 
   const inventoryPage = new InventoryPage(page);
 
-  const links: { locator: typeof inventoryPage.twitterLink; href: string }[] = [
-    { locator: inventoryPage.twitterLink, href: 'https://twitter.com/saucelabs' },
+  const links: { locator: typeof inventoryPage.xLink; href: string }[] = [
+    { locator: inventoryPage.xLink, href: 'https://x.com/saucelabs' },
     { locator: inventoryPage.facebookLink, href: 'https://www.facebook.com/saucelabs' },
     { locator: inventoryPage.linkedinLink, href: 'https://www.linkedin.com/company/sauce-labs/' },
   ];
