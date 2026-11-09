@@ -1,4 +1,6 @@
+import { execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import type { Reporter, FullConfig, Suite, TestCase } from '@playwright/test/reporter';
 
@@ -27,7 +29,7 @@ interface RequirementRow {
 interface UnknownRequirement {
   id: string;
   testTitle: string;
-  browser: string;
+  browsers: string[];
 }
 
 interface Summary {
@@ -39,11 +41,56 @@ interface Summary {
   'Unknown requirement IDs': number;
 }
 
+type RunScope = 'COMPLETE' | 'PARTIAL';
+
+interface RunDetails {
+  commit: string;
+  baseUrl: string;
+  playwrightVersion: string;
+  ranBrowsers: string[];
+  unrunBrowsers: string[];
+  scope: RunScope;
+  reasons: string[];
+}
+
 interface Report {
   generated: string;
   summary: Summary;
   requirements: RequirementRow[];
   unknownRequirements: UnknownRequirement[];
+  runDetails: RunDetails;
+}
+
+function commitSha(): string {
+  try {
+    return execSync('git rev-parse HEAD', {
+      cwd: process.cwd(),
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString().trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function playwrightVersion(): string {
+  try {
+    const require = createRequire(join(process.cwd(), 'package.json'));
+    const pkg = require('playwright/package.json') as { version?: string };
+    return pkg.version ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function grepArg(argv: string[]): string | undefined {
+  return argv.find(
+    (arg) =>
+      arg.startsWith('--grep') ||
+      arg === '-g' ||
+      arg === '-gv' ||
+      arg.startsWith('-g=') ||
+      arg.startsWith('-gv='),
+  );
 }
 
 const REQUIREMENTS_FILE = join('docs', 'traceability', 'requirements.json');
@@ -55,12 +102,11 @@ const OUTPUT_DIR = join('test-results', 'traceability');
 function classify(test: TestCase): PerTestStatus {
   const result = test.results[test.results.length - 1];
 
-  // An expected failure (test.fail) is never a pass, even if it now fails as expected.
-  if (test.expectedStatus === 'failed') return 'expected';
-
   if (!result) return 'skipped';
 
   if (result.status === 'skipped' || test.expectedStatus === 'skipped') return 'skipped';
+
+  if (test.expectedStatus === 'failed') return result.status === 'failed' ? 'expected' : 'failed';
 
   if (result.status === 'failed' || result.status === 'timedOut' || result.status === 'interrupted') {
     return 'failed';
@@ -85,8 +131,10 @@ function overallStatus(verdicts: PerTestStatus[]): RequirementStatus {
 
 class TraceabilityReporter implements Reporter {
   private rootSuite?: Suite;
+  private config?: FullConfig;
 
-  onBegin(_config: FullConfig, suite: Suite): void {
+  onBegin(config: FullConfig, suite: Suite): void {
+    this.config = config;
     this.rootSuite = suite;
   }
 
@@ -99,16 +147,20 @@ class TraceabilityReporter implements Reporter {
     const knownIds = new Set(requirements.map((requirement) => requirement.id));
 
     const linkedByReq = new Map<string, { test: TestCase; verdict: PerTestStatus }[]>();
-    const unknown: UnknownRequirement[] = [];
+    const unknown = new Map<string, UnknownRequirement>();
 
     for (const test of this.rootSuite?.allTests() ?? []) {
       const browser = test.parent.project()?.name ?? 'unknown';
       for (const annotation of test.annotations) {
-        if (annotation.type !== 'requirement' || !annotation.description) continue;
-        const id = annotation.description;
+        if (annotation.type !== 'requirement') continue;
+        const id = annotation.description?.trim() ? annotation.description : '(empty)';
 
         if (!knownIds.has(id)) {
-          unknown.push({ id, testTitle: test.title, browser });
+          const key = `${id}::${test.title}`;
+          const entry =
+            unknown.get(key) ?? { id, testTitle: test.title, browsers: [] };
+          if (!entry.browsers.includes(browser)) entry.browsers.push(browser);
+          unknown.set(key, entry);
           continue;
         }
 
@@ -138,21 +190,26 @@ class TraceabilityReporter implements Reporter {
       };
     });
 
+    const unknownRequirements = [...unknown.values()];
+
     const summary: Summary = {
       PASS: 0,
       FAIL: 0,
       FLAKY: 0,
       'NOT VERIFIED': 0,
       'NO TEST IN THIS RUN': 0,
-      'Unknown requirement IDs': unknown.length,
+      'Unknown requirement IDs': unknownRequirements.length,
     };
     for (const row of rows) summary[row.status] += 1;
+
+    const runDetails = buildRunDetails(this.config, this.rootSuite);
 
     const report: Report = {
       generated: new Date().toISOString(),
       summary,
       requirements: rows,
-      unknownRequirements: unknown,
+      unknownRequirements,
+      runDetails,
     };
 
     mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -161,10 +218,47 @@ class TraceabilityReporter implements Reporter {
   }
 }
 
+function buildRunDetails(config: FullConfig | undefined, suite: Suite | undefined): RunDetails {
+  const argv = config?.argv ?? [];
+  const configured = (config?.projects ?? [])
+    .filter((project) => project.name !== 'setup')
+    .map((project) => project.name);
+
+  const ranBrowsers: string[] = [];
+  for (const test of suite?.allTests() ?? []) {
+    if (test.results.length === 0) continue;
+    const browser = test.parent.project()?.name;
+    if (!browser || browser === 'setup') continue;
+    if (!ranBrowsers.includes(browser)) ranBrowsers.push(browser);
+  }
+
+  const unrunBrowsers = configured.filter((browser) => !ranBrowsers.includes(browser));
+
+  const reasons: string[] = [];
+  if (unrunBrowsers.length > 0) reasons.push(`Configured browsers not run: ${unrunBrowsers.join(', ')}`);
+  if (config?.shard) reasons.push(`Shard ${config.shard.current} of ${config.shard.total}`);
+  const grep = grepArg(argv);
+  if (grep) reasons.push(`Grep filter ${grep}`);
+
+  return {
+    commit: commitSha(),
+    baseUrl: config?.projects?.[0]?.use.baseURL ?? 'unknown',
+    playwrightVersion: playwrightVersion(),
+    ranBrowsers,
+    unrunBrowsers,
+    scope: reasons.length === 0 ? 'COMPLETE' : 'PARTIAL',
+    reasons,
+  };
+}
+
 function renderMarkdown(report: Report): string {
   const lines: string[] = [];
   lines.push('# Requirement Traceability Matrix');
   lines.push('');
+  if (report.runDetails.scope === 'PARTIAL') {
+    lines.push('Partial run: PASS covers only the tests in this run.');
+    lines.push('');
+  }
   lines.push(`Generated: ${report.generated}`);
   lines.push('');
 
@@ -202,8 +296,23 @@ function renderMarkdown(report: Report): string {
     lines.push('| Requirement ID | Test Title | Browser |');
     lines.push('| --- | --- | --- |');
     for (const unknown of report.unknownRequirements) {
-      lines.push(`| ${unknown.id} | \`${unknown.testTitle}\` | ${unknown.browser} |`);
+      lines.push(`| ${unknown.id} | \`${unknown.testTitle}\` | ${unknown.browsers.join(', ')} |`);
     }
+  }
+  lines.push('');
+
+  const run = report.runDetails;
+  lines.push('## Run details');
+  lines.push(`- Commit: ${run.commit}`);
+  lines.push(`- Base URL: ${run.baseUrl}`);
+  lines.push(`- Playwright version: ${run.playwrightVersion}`);
+  lines.push(`- Browsers ran: ${run.ranBrowsers.join(', ')}`);
+  lines.push(`- Browsers configured but not run: ${run.unrunBrowsers.join(', ') || '(none)'}`);
+  lines.push(`- Run scope: ${run.scope}`);
+  if (run.reasons.length > 0) {
+    lines.push('');
+    lines.push('Reasons for partial run:');
+    for (const reason of run.reasons) lines.push(`- ${reason}`);
   }
   lines.push('');
 
