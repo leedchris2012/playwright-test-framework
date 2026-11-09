@@ -75,7 +75,7 @@ test.describe('standard_user', () => {
 
   // Checks that completing a purchase shows the "Thank you for your order!"
   // confirmation page with its buttons.
-  test('finishing checkout shows the order confirmation page', async ({ page }) => {
+  test('finishing checkout shows the order confirmation page', { annotation: { type: 'requirement', description: 'REQ-CHK-002' } }, async ({ page }) => {
     await checkoutBackpack(page);
 
     await expect(page).toHaveURL(/.*checkout-complete\.html/);
@@ -90,7 +90,7 @@ test.describe('standard_user', () => {
 
   // Checks that leaving "First Name" blank on the checkout form blocks
   // checkout and shows the right error message.
-  test('checkout step one requires a first name', async ({ page }) => {
+  test('checkout step one requires a first name', { annotation: { type: 'requirement', description: 'REQ-CHK-001' } }, async ({ page }) => {
     await reachCheckoutStepOne(page);
 
     const stepOnePage = new CheckoutStepOnePage(page);
@@ -104,7 +104,7 @@ test.describe('standard_user', () => {
 
   // Checks that leaving "Last Name" blank on the checkout form blocks
   // checkout and shows the right error message.
-  test('checkout step one requires a last name', async ({ page }) => {
+  test('checkout step one requires a last name', { annotation: { type: 'requirement', description: 'REQ-CHK-001' } }, async ({ page }) => {
     await reachCheckoutStepOne(page);
 
     const stepOnePage = new CheckoutStepOnePage(page);
@@ -118,7 +118,7 @@ test.describe('standard_user', () => {
 
   // Checks that leaving "Postal Code" blank on the checkout form blocks
   // checkout and shows the right error message.
-  test('checkout step one requires a postal code', async ({ page }) => {
+  test('checkout step one requires a postal code', { annotation: { type: 'requirement', description: 'REQ-CHK-001' } }, async ({ page }) => {
     await reachCheckoutStepOne(page);
 
     const stepOnePage = new CheckoutStepOnePage(page);

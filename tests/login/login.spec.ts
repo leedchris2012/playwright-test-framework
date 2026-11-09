@@ -12,7 +12,7 @@ test('homepage loads successfully', async ({ page }) => {
 });
 
 // Checks that a valid username/password takes the user to the Products page.
-test('logs in successfully with standard_user', async ({ page }) => {
+test('logs in successfully with standard_user', { annotation: { type: 'requirement', description: 'REQ-LOGIN-001' } }, async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
 
@@ -24,7 +24,7 @@ test('logs in successfully with standard_user', async ({ page }) => {
 
 // Checks that a locked-out test account is denied login and shown the
 // "locked out" error message.
-test('locked_out_user is blocked with an error message', async ({ page }) => {
+test('locked_out_user is blocked with an error message', { annotation: { type: 'requirement', description: 'REQ-LOGIN-002' } }, async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
 
@@ -90,7 +90,7 @@ test('submitting with no username shows a required-field error', async ({ page }
 
 // Security check: typing the Products page address directly into the
 // browser (without logging in first) is blocked, not just skipped past.
-test('direct navigation to inventory.html without logging in is blocked', async ({ page }) => {
+test('direct navigation to inventory.html without logging in is blocked', { annotation: { type: 'requirement', description: 'REQ-LOGIN-003' } }, async ({ page }) => {
   const loginPage = new LoginPage(page);
 
   await page.goto('/inventory.html');

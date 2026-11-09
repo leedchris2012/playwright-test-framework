@@ -1,0 +1,26 @@
+[
+  {
+    "id": "REQ-LOGIN-001",
+    "description": "A valid user reaches the Products page."
+  },
+  {
+    "id": "REQ-LOGIN-002",
+    "description": "A locked-out user is denied with an error message."
+  },
+  {
+    "id": "REQ-LOGIN-003",
+    "description": "A logged-out user cannot open the inventory page directly."
+  },
+  {
+    "id": "REQ-LOGIN-004",
+    "description": "The password field masks typed characters."
+  },
+  {
+    "id": "REQ-CHK-001",
+    "description": "Checkout requires first name, last name and postal code."
+  },
+  {
+    "id": "REQ-CHK-002",
+    "description": "Finishing checkout shows the order confirmation."
+  }
+]
